@@ -16,7 +16,7 @@ def padSequence(sequence, max_len,num_inputs):
         return sequence
 max_len = p.load('max_len')
 batch_size = 1000
-input_shape = (max_len, 10)
+input_shape = (max_len, 3)
 
 
 model = Sequential()
@@ -42,7 +42,7 @@ series_list = p.load('series_list')
 output_list = p.load('output_list')
 input_data = [padSequence(item,max_len,10) for item in series_list]
 #print(input_data[0:5])
-input_data = np.array(input_data).reshape(3810,128,10)
+input_data = np.array(input_data).reshape(3810,128,3)
 model.fit(np.array(input_data), np.array(output_list), epochs=200, batch_size=batch_size, verbose = 1, validation_split=0.1, callbacks=cbs)
 import ezPickle as p
 model = p.load('trained_model')

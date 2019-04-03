@@ -23,8 +23,8 @@ for id, data in train_x.iterrows():
                 num_sequences+=1
                 
         current_len+=1
-        temp_list.append(data[3:].tolist())
-        all_seq.append(data[3:].tolist())
+        temp_list.append(data[3:6].tolist())
+        all_seq.append(data[3:6].tolist())
 series_list.append(temp_list)
 
 
