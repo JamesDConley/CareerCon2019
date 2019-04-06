@@ -1,49 +1,25 @@
-#Preprocess data for training
+#Generating Summary Statistics For Random Forests
 import ezPickle as p
 import pandas as pd
-#batchSize, sequenceLength, numInputs
+
 train_x = pd.read_csv('X_train.csv')
-train_y = pd.read_csv('y_train.csv')
-max_len = 0
-current_len = 0
-tempSeriesId = -1
-series_list = []
-temp_list = []
-num_sequences = 0
-for id, data in train_x.iterrows():
-        if data[1] != tempSeriesId:
-                if max_len < current_len:
-                        max_len = current_len
-                tempSeriesId = data[1]
-                series_list.append(temp_list.copy())
-                temp_list = []
-                current_len = 0
-                num_sequences+=1
-        current_len+=1
-        temp_list.append(data[3:].tolist())
+test_x = pd.read_csv('X_test.csv')
+
+train_x = train_x.drop(columns=['measurement_number'])
+test_x = test_x.drop(columns=['measurement_number'])
+
+for index in ['linear_acceleration_X', 'linear_acceleration_Y', 'linear_acceleration_Z']:
+	train_x[index+'_jerk'] = train_x.groupby(['series_id'])[index].transform(pd.Series.diff)
+	test_x[index+'_jerk'] = test_x.groupby(['series_id'])[index].transform(pd.Series.diff)
+grouped_train_x = train_x.groupby(['series_id'])
+grouped_test_x = test_x.groupby(['series_id'])
+out = grouped_train_x.describe()
+t_out = grouped_test_x.describe()
+
+out.columns = ['{}_{}'.format(i, j) for i, j in out.columns]
+t_out.columns = ['{}_{}'.format(i, j) for i, j in t_out.columns]
+
+out.to_csv('summary_stats.csv')
+t_out.to_csv('test_summary_stats.csv')
 
 
-encoder_dict = {}
-count = 0
-output_list = []
-for id, data in train_y.iterrows():
-        if not data[2] in encoder_dict.keys():
-                encoder_dict[data[2]] = count
-                count+=1
-        output_list.append(data[2])
-for key in encoder_dict.keys():
-        temp = [0]*count
-        temp[encoder_dict[key]] = 1
-        encoder_dict[key] = temp
-output_list = [encoder_dict[item] for item in output_list]
-p.save(count,'count')
-p.save(encoder_dict,'encoder_dict')
-p.save(max_len,'max_len')
-p.save(num_sequences,'num_sequences')
-p.save(series_list,'series_list')
-p.save(output_list,'output_list')
-print(max_len)
-print(num_sequences)
-print(count)
-#print(train_x)
-#print(train_y)
